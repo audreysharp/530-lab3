@@ -396,7 +396,36 @@ int delete  (const char *string, size_t strlen) {
  * Use any policy you like to select the node.
  */
 int drop_one_node  () {
-  // Your code here
+  //Find the first node that has no children (go down the right branch of tree until no more children) 
+  struct trie_node *currentnode = root;
+  char string[64];
+  memset(string, '\0', 64);
+  int len = 0;
+  print();
+  //Go down right branch 
+  do{
+	//printf("Key: %s\n", currentnode->key);
+  	if(currentnode->key != NULL){
+  		int i;
+
+  		memmove(string + currentnode->strlen, string, strlen(string)+1);
+
+  		for(i = 0; i < currentnode->strlen; i++){
+  			string[i] = currentnode->key[i];
+  		}
+  		len += currentnode->strlen;
+  	}
+  	
+  	currentnode = currentnode->children;
+
+  	// if(currentnode == NULL)
+  	// 	break;
+  }while(currentnode != NULL);
+
+  //print();
+  printf("String: %s Length: %d\n", string, len);
+  delete(string, len);
+
   return 0;
 }
 
@@ -404,9 +433,10 @@ int drop_one_node  () {
  */
 void check_max_nodes  () {
   while (node_count > max_count) {
-    printf("Warning: not dropping nodes yet.  Drop one node not implemented\n");
-    break;
-    //drop_one_node();
+    // printf("Warning: not dropping nodes yet.  Drop one node not implemented\n");
+    // break;
+    //printf("Dropping a node\n");
+    drop_one_node();
   }
 }
 
