@@ -85,7 +85,7 @@ int compare_keys (const char *string1, int len1, const char *string2, int len2, 
     }
 
     void shutdown_delete_thread() {
-  // Don't need to do anything in the sequential case.
+      // Don't need to do anything in the sequential case.
       return;
     }
 
@@ -140,8 +140,10 @@ int search  (const char *string, size_t strlen, int32_t *ip4_address) {
   struct trie_node *found;
 
   // Skip strings of length 0
-  if (strlen == 0)
+  if (strlen == 0){
+    pthread_mutex_unlock(&trie_mutex);
     return 0;
+  }
 
   found = _search(root, string, strlen);
   
@@ -280,12 +282,15 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
 int insert (const char *string, size_t strlen, int32_t ip4_address) {
   pthread_mutex_lock(&trie_mutex);
   // Skip strings of length 0
-  if (strlen == 0)
+  if (strlen == 0){
+    pthread_mutex_unlock(&trie_mutex);
     return 0;
+  }
 
   /* Edge case: root is null */
   if (root == NULL) {
     root = new_leaf (string, strlen, ip4_address);
+    pthread_mutex_unlock(&trie_mutex);
     return 1;
   }
   int temp = _insert (string, strlen, ip4_address, root, NULL, NULL);
@@ -400,11 +405,14 @@ int insert (const char *string, size_t strlen, int32_t ip4_address) {
   }
 
   int delete  (const char *string, size_t strlen) {
-  // Skip strings of length 0
-    if (strlen == 0)
-      return 0;
-
     pthread_mutex_lock(&trie_mutex);
+  // Skip strings of length 0
+    if (strlen == 0){
+      pthread_mutex_unlock(&trie_mutex);
+      return 0;
+    }
+
+    
     int temp = NULL != _delete(root, string, strlen);
     pthread_mutex_unlock(&trie_mutex);
     return (temp);
@@ -415,7 +423,8 @@ int insert (const char *string, size_t strlen, int32_t ip4_address) {
  * Use any policy you like to select the node.
  */
  int drop_one_node  () {
-  //Find the first node that has no children (go down the right branch of tree until no more children) 
+  //pthread_mutex_lock(&trie_mutex);
+  //Find the first node that has no children (go down the right branch of tree until no more children)
   struct trie_node *currentnode = root;
   char string[64];
   memset(string, '\0', 64);
@@ -443,23 +452,26 @@ int insert (const char *string, size_t strlen, int32_t ip4_address) {
 
   //print();
   //printf("String: %s Length: %d\n", string, len);
-  delete(string, len);
+  _delete(root, string, len);
 
+  //pthread_mutex_unlock(&trie_mutex);
   return 0;
 }
 
 /* Check the total node count; see if we have exceeded a the max.
  */
 void check_max_nodes  () {
+  pthread_mutex_lock(&trie_mutex);
   while (node_count > max_count) {
     // printf("Warning: not dropping nodes yet.  Drop one node not implemented\n");
     // break;
     //printf("Dropping a node\n");
 
-    pthread_mutex_lock(&trie_mutex);
+    //pthread_mutex_lock(&trie_mutex);
     drop_one_node();
-    pthread_mutex_unlock(&trie_mutex);
+    //pthread_mutex_unlock(&trie_mutex);
   }
+  pthread_mutex_unlock(&trie_mutex);
 }
 
 
