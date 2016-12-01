@@ -19,6 +19,7 @@ static struct trie_node * root = NULL;
 static int node_count = 0;
 static int max_count = 100;  //Try to stay at no more than 100 nodes
 pthread_mutex_t trie_mutex;
+pthread_cond_t trie_cond;
 
 struct trie_node * new_leaf (const char *string, size_t strlen, int32_t ip4_address) {
   struct trie_node *new_node = malloc(sizeof(struct trie_node));
@@ -80,6 +81,7 @@ int compare_keys (const char *string1, int len1, const char *string2, int len2, 
 
     void init(int numthreads) {
       pthread_mutex_init(&trie_mutex, NULL);
+      pthread_cond_init(&trie_cond, NULL);
 
       root = NULL;
     }
@@ -294,6 +296,10 @@ int insert (const char *string, size_t strlen, int32_t ip4_address) {
     return 1;
   }
   int temp = _insert (string, strlen, ip4_address, root, NULL, NULL);
+
+  if(temp)
+    pthread_cond_signal(&trie_cond);
+
   pthread_mutex_unlock(&trie_mutex);
   return temp;
 }
@@ -462,6 +468,12 @@ int insert (const char *string, size_t strlen, int32_t ip4_address) {
  */
 void check_max_nodes  () {
   pthread_mutex_lock(&trie_mutex);
+
+  if(separate_delete_thread){
+    while(!(node_count > max_count))
+          pthread_cond_wait(&trie_cond, &trie_mutex);
+  }
+
   while (node_count > max_count) {
     // printf("Warning: not dropping nodes yet.  Drop one node not implemented\n");
     // break;
