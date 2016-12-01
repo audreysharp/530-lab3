@@ -401,7 +401,7 @@ int drop_one_node  () {
   char string[64];
   memset(string, '\0', 64);
   int len = 0;
-  print();
+  //print();
   //Go down right branch 
   do{
 	//printf("Key: %s\n", currentnode->key);
