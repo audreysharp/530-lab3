@@ -1,3 +1,13 @@
+/* COMP 530 Lab 3
+
+Brandon Clark (rbc), PID 720474282
+Audrey Sharp (aud), PID 720473458
+
+UNC Honor Pledge: I certify that no unauthorized assistance has been received or
+given in the completion of this work
+
+*/
+
 /* A (reverse) trie with fine-grained (per node) locks. 
  *
  * Hint: We recommend using a hand-over-hand protocol to order your locks,
