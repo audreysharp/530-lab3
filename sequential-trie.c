@@ -433,7 +433,7 @@ int drop_one_node  () {
   }while(currentnode != NULL);
 
   //print();
-  printf("String: %s Length: %d\n", string, len);
+  //printf("String: %s Length: %d\n", string, len);
   delete(string, len);
 
   return 0;
