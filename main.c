@@ -30,7 +30,7 @@ int simulation_length = 30; // default to 30 seconds
 volatile int finished = 0;
 
 // Uncomment this line for debug printing
-#define DEBUG 1
+//#define DEBUG 1
 #ifdef DEBUG
 #define DEBUG_PRINT(...) printf(__VA_ARGS__)
 #else
@@ -311,17 +311,18 @@ int self_tests() {
     printf("End of self-tests\n");
 
     char alphabet[] = "abcdefghijklmnopqrstuvwxyz";
-    // UNIT TEST ONE
-    int i;
+        int i;
     int j;
-    printf("Inserting 1000 strings...\n");
-    for (i=0; i<1000; i++) {
-      int randStrLen = rand()%30; // random number between 1 and 30
+
+    // UNIT TEST TWO
+    printf("Inserting 40 strings...\n"); // since 40 strings != 40 nodes
+    for (i=0; i<40; i++) {
+      int randStrLen = 1+rand()%30; // random number between 1 and 30
       char str[randStrLen];
       for (j=0; j<randStrLen; j++) {
         str[j] = alphabet[rand() % (sizeof(alphabet) - 1)];
       }
-      INSERT_TEST(str, randStrLen, 1);
+      insert(str, randStrLen, 1);
     }
     print();
     printf("Sleeping...\n");
@@ -329,15 +330,21 @@ int self_tests() {
     printf("Awake!\n");
     print();
 
-    // UNIT TEST TWO
-    printf("Inserting 40 strings...\n"); // since 40 strings != 40 nodes
-    for (i=0; i<40; i++) {
-      int randStrLen = rand()%30; // random number between 1 and 30
-      char str[randStrLen];
+    // UNIT TEST ONE
+
+    printf("Inserting 1000 strings...\n");
+    char str[64];
+    int randStrLen;
+    for (i=0; i<1000; i++) {
+      randStrLen = 1+rand()%30; // random number between 1 and 30
+
+
+        printf("%d   %d\n", randStrLen, i);
       for (j=0; j<randStrLen; j++) {
-        str[j] = alphabet[rand() % (sizeof(alphabet) - 1)];
+        int key = rand() % (int) (sizeof alphabet - 1);
+        str[j] = alphabet[key];
       }
-      INSERT_TEST(str, randStrLen, 1);
+      insert(str, randStrLen, 1);
     }
     print();
     printf("Sleeping...\n");
