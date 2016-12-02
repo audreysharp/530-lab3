@@ -309,6 +309,42 @@ int self_tests() {
     printf("End of self-tests, tree is:\n");
     print();
     printf("End of self-tests\n");
+
+    char alphabet[] = "abcdefghijklmnopqrstuvwxyz";
+    // UNIT TEST ONE
+    int i;
+    int j;
+    printf("Inserting 1000 strings...\n");
+    for (i=0; i<1000; i++) {
+      int randStrLen = rand()%30; // random number between 1 and 30
+      char str[randStrLen];
+      for (j=0; j<randStrLen; j++) {
+        str[j] = alphabet[rand() % (sizeof(alphabet) - 1)];
+      }
+      INSERT_TEST(str, randStrLen, 1);
+    }
+    print();
+    printf("Sleeping...\n");
+    sleep(5);
+    printf("Awake!\n");
+    print();
+
+    // UNIT TEST TWO
+    printf("Inserting 40 strings...\n"); // since 40 strings != 40 nodes
+    for (i=0; i<40; i++) {
+      int randStrLen = rand()%30; // random number between 1 and 30
+      char str[randStrLen];
+      for (j=0; j<randStrLen; j++) {
+        str[j] = alphabet[rand() % (sizeof(alphabet) - 1)];
+      }
+      INSERT_TEST(str, randStrLen, 1);
+    }
+    print();
+    printf("Sleeping...\n");
+    sleep(5);
+    printf("Awake!\n");
+    print();
+
     return 0;
 }
 
