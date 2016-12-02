@@ -36,10 +36,7 @@ void shutdown_delete_thread ();
 /* Print the structure of the tree.  Mostly useful for debugging. */
 void print (); 
 
-/* Determines whether to allow blocking until 
- * a name is available.
- */
-extern int allow_squatting;
-
+//Whether or not a separate delete thread should be created;
+extern int separate_delete_thread;
 
 #endif /* __TRIE_H__ */ 

@@ -22,8 +22,13 @@ pthread_mutex_t trie_mutex;
 pthread_cond_t trie_cond;
 
 struct trie_node * new_leaf (const char *string, size_t strlen, int32_t ip4_address) {
+
   struct trie_node *new_node = malloc(sizeof(struct trie_node));
   node_count++;
+
+  if((node_count > max_count) && separate_delete_thread);
+        pthread_cond_signal(&trie_cond);
+
   if (!new_node) {
     printf ("WARNING: Node memory allocation failed.  Results may be bogus.\n");
     return NULL;
@@ -87,8 +92,7 @@ int compare_keys (const char *string1, int len1, const char *string2, int len2, 
     }
 
     void shutdown_delete_thread() {
-      // Don't need to do anything in the sequential case.
-      return;
+      pthread_exit(NULL);
     }
 
 /* Recursive helper function.
@@ -297,10 +301,12 @@ int insert (const char *string, size_t strlen, int32_t ip4_address) {
   }
   int temp = _insert (string, strlen, ip4_address, root, NULL, NULL);
 
-  if(temp)
-    pthread_cond_signal(&trie_cond);
+  if((node_count > max_count) && separate_delete_thread);
+        pthread_cond_signal(&trie_cond);
+  
 
   pthread_mutex_unlock(&trie_mutex);
+
   return temp;
 }
 
@@ -467,22 +473,24 @@ int insert (const char *string, size_t strlen, int32_t ip4_address) {
 /* Check the total node count; see if we have exceeded a the max.
  */
 void check_max_nodes  () {
+  
   pthread_mutex_lock(&trie_mutex);
 
   if(separate_delete_thread){
-    while(!(node_count > max_count))
+    while(node_count <= max_count)
           pthread_cond_wait(&trie_cond, &trie_mutex);
   }
+  
+  printf("NODECOUNTBEFORE %d\n", node_count);
 
   while (node_count > max_count) {
-    // printf("Warning: not dropping nodes yet.  Drop one node not implemented\n");
-    // break;
-    //printf("Dropping a node\n");
 
-    //pthread_mutex_lock(&trie_mutex);
     drop_one_node();
-    //pthread_mutex_unlock(&trie_mutex);
+
   }
+
+  printf("NODECOUNTAFTER %d\n", node_count);
+
   pthread_mutex_unlock(&trie_mutex);
 }
 
@@ -502,5 +510,7 @@ void print() {
   /* Do a simple depth-first search */
   if (root)
     _print(root);
+
+  printf("Nodes: %d\n", node_count);
   pthread_mutex_unlock(&trie_mutex);
 }
