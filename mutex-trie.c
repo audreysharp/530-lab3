@@ -16,6 +16,7 @@ struct trie_node {
 };
 
 static struct trie_node * root = NULL;
+volatile int end = 0;
 static int node_count = 0;
 static int max_count = 100;  //Try to stay at no more than 100 nodes
 pthread_mutex_t trie_mutex;
@@ -92,7 +93,10 @@ int compare_keys (const char *string1, int len1, const char *string2, int len2, 
     }
 
     void shutdown_delete_thread() {
-      pthread_exit(NULL);
+      end = 1;
+      pthread_cond_signal(&trie_cond);
+
+      //pthread_exit(NULL);
     }
 
 /* Recursive helper function.
@@ -473,25 +477,54 @@ int insert (const char *string, size_t strlen, int32_t ip4_address) {
 /* Check the total node count; see if we have exceeded a the max.
  */
 void check_max_nodes  () {
-  
-  pthread_mutex_lock(&trie_mutex);
 
   if(separate_delete_thread){
-    while(node_count <= max_count)
-          pthread_cond_wait(&trie_cond, &trie_mutex);
+    while(end != 1){
+    
+      pthread_mutex_lock(&trie_mutex);
+
+      if(separate_delete_thread){
+        while(node_count <= max_count && end != 1)
+              pthread_cond_wait(&trie_cond, &trie_mutex);
+      }
+      
+      printf("NODECOUNTBEFORE %d\n", node_count);
+
+      while (node_count > max_count) {
+
+        drop_one_node();
+
+      }
+
+      printf("NODECOUNTAFTER %d\n", node_count);
+
+      pthread_mutex_unlock(&trie_mutex);
+    }
   }
-  
-  printf("NODECOUNTBEFORE %d\n", node_count);
+  else{
+    pthread_mutex_lock(&trie_mutex);
 
-  while (node_count > max_count) {
+      if(separate_delete_thread){
+        while(node_count <= max_count && end != 1)
+              pthread_cond_wait(&trie_cond, &trie_mutex);
+      }
+      
+      printf("NODECOUNTBEFORE %d\n", node_count);
 
-    drop_one_node();
+      while (node_count > max_count) {
 
+        drop_one_node();
+
+      }
+
+      printf("NODECOUNTAFTER %d\n", node_count);
+
+      pthread_mutex_unlock(&trie_mutex);
   }
 
-  printf("NODECOUNTAFTER %d\n", node_count);
+  //printf("ending");
 
-  pthread_mutex_unlock(&trie_mutex);
+  //print();
 }
 
 

@@ -380,7 +380,7 @@ int main(int argc, char ** argv) {
     sleep (simulation_length);
     finished = 1;
 
-    print();
+    //print();
 
     // Wait for all clients to exit.  If we are allowing blocking,
     // cancel the threads, since they may hang forever
@@ -396,7 +396,9 @@ int main(int argc, char ** argv) {
         shutdown_delete_thread();
     }
 
-    print();
+    //printf("very end");
+
+    //print();
 
 #ifdef DEBUG  
     /* Print the final tree for fun */
