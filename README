@@ -1,0 +1,16 @@
+
+
+Locking protocol
+- Each node has its own lock
+
+Delete
+- Goal is to lock the trie from root all the way to the node to be deleted
+- lock the root node on calling _delete()
+- before each recursion into the children, get the lock for the child node
+- on each return unlock the current node
+
+Search & insert
+- Implement hand over hand locking
+- lock root node on calling _search() and _insert()
+- before entering recursion, lock the child node and release the parent node
+- when the final node is reached, do the insertion, release the parent lock and return
